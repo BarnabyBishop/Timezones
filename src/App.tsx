@@ -155,7 +155,7 @@ function App() {
             type="checkbox"
             checked={
               Object.entries(selectedZones).find(
-                ([zone, selected]) => !selected
+                ([zone, selected]) => zone && !selected
               )
                 ? false
                 : true
