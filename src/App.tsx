@@ -13,13 +13,14 @@ type TimeZone = {
 
 const DEFAULT_ZONE = "Sydney";
 
-const timeZones = [
+const DEFAULT_TIMEZONES = [
   {
     label: "UK",
     timezone: "Europe/London",
     gmtOffset: 1,
     abbreviation: "BST",
     hasDST: true,
+    selected: false,
   },
   {
     label: "Poland",
@@ -27,6 +28,7 @@ const timeZones = [
     gmtOffset: 2,
     abbreviation: "CEST",
     hasDST: true,
+    selected: false,
   },
   {
     label: "India",
@@ -34,6 +36,7 @@ const timeZones = [
     gmtOffset: 5.5,
     abbreviation: "IST",
     hasDST: false,
+    selected: false,
   },
   {
     label: "Perth",
@@ -41,6 +44,7 @@ const timeZones = [
     gmtOffset: 8,
     abbreviation: "AWST",
     hasDST: false,
+    selected: true,
   },
   {
     label: "Seoul",
@@ -48,6 +52,7 @@ const timeZones = [
     gmtOffset: 9,
     abbreviation: "KST",
     hasDST: false,
+    selected: true,
   },
   {
     label: "Brisbane",
@@ -55,6 +60,7 @@ const timeZones = [
     gmtOffset: 10,
     abbreviation: "AEST",
     hasDST: false,
+    selected: true,
   },
   {
     label: "Sydney",
@@ -62,6 +68,7 @@ const timeZones = [
     gmtOffset: 11,
     abbreviation: "AEDT",
     hasDST: true,
+    selected: true,
   },
   {
     label: "New Zealand",
@@ -69,6 +76,7 @@ const timeZones = [
     gmtOffset: 13,
     abbreviation: "NZDT",
     hasDST: true,
+    selected: true,
   },
 ];
 
@@ -76,9 +84,7 @@ function App() {
   // Used to rerender every minute to update the 'now' line
   const [now, setNow] = useState(new Date());
 
-  const [selectedZones, setSelectedZones] = useState(
-    Object.fromEntries(timeZones.map(({ label }) => [label, true]))
-  );
+  const [timeZones, setTimeZones] = useState(DEFAULT_TIMEZONES);
 
   const [selectedRows, setSelectedRows] = useState<Array<number>>([]);
 
@@ -94,37 +100,34 @@ function App() {
     // Easy for toggling all on and off
     if (zone.label === DEFAULT_ZONE) {
       // Are most of the zones enabled or disabled?
-      let selected = 0;
-      let notSelected = 0;
+      let selectedCount = 0;
+      let notSelectedCount = 0;
 
-      Object.values(selectedZones).forEach((enabled) => {
-        if (enabled) {
-          selected++;
+      timeZones.forEach(({ selected }) => {
+        if (selected) {
+          selectedCount++;
         } else {
-          notSelected++;
+          notSelectedCount++;
         }
       });
 
-      if (selected > notSelected) {
-        setSelectedZones(
-          Object.fromEntries(
-            timeZones.map(({ label }) =>
-              label === DEFAULT_ZONE ? [label, true] : [label, false]
-            )
+      if (selectedCount > notSelectedCount) {
+        setTimeZones(
+          timeZones.map((zone) =>
+            zone.label === DEFAULT_ZONE
+              ? { ...zone, selected: true }
+              : { ...zone, selected: false }
           )
         );
       } else {
-        setSelectedZones(
-          Object.fromEntries(timeZones.map(({ label }) => [label, true]))
-        );
+        setTimeZones(timeZones.map((zone) => ({ ...zone, selected: true })));
       }
       return;
     }
 
-    setSelectedZones((prev) => ({
-      ...selectedZones,
-      [zone.label]: !prev[zone.label],
-    }));
+    setTimeZones((prev) =>
+      prev.map((zone) => ({ ...zone, selected: !zone.selected }))
+    );
   };
 
   const toggleRow = (index: number) => {
@@ -144,27 +147,25 @@ function App() {
   // const borderOffsetTop = nowHour * 1;- borderOffsetTop
   const minuteTop = (48 / 60) * nowMinutes;
   const nowPosition = hourTop + minuteTop;
+  const selectedTimeZones = timeZones.filter(
+    (zone) => zone.selected || zone.label === DEFAULT_ZONE
+  );
 
   return (
-    <div>
+    <div className="grid justify-center">
       <div className="fixed left-1 top-14 z-10">
         <div key={`selectors_all`} className="flex gap-1 cursor-pointer">
           <input
             id={`selectors_all_control`}
             name={`selectors_all_control`}
             type="checkbox"
-            checked={
-              Object.entries(selectedZones).find(
-                ([zone, selected]) => zone && !selected
-              )
-                ? false
-                : true
-            }
+            checked={timeZones.find(({ selected }) => !selected) ? false : true}
             onChange={(e) =>
-              setSelectedZones(
-                Object.fromEntries(
-                  timeZones.map(({ label }) => [label, e.target.checked])
-                )
+              setTimeZones((prev) =>
+                prev.map((zone) => ({
+                  ...zone,
+                  selected: e.target.checked,
+                }))
               )
             }
           />
@@ -172,57 +173,85 @@ function App() {
             All
           </label>
         </div>
-        {Object.entries(selectedZones).map(([zone, selected]) => {
+        {timeZones.map((zone) => {
           return (
             <div
-              key={`selectors_${zone}`}
+              key={`selectors_${zone.label}`}
               className="flex gap-1 cursor-pointer"
             >
               <input
-                id={`selectors_${zone}_control`}
-                name={`selectors_${zone}_control`}
+                id={`selectors_${zone.label}_control`}
+                name={`selectors_${zone.label}_control`}
                 type="checkbox"
-                checked={selected}
+                checked={zone.selected}
                 onChange={(e) =>
-                  setSelectedZones((prev) => ({
-                    ...prev,
-                    [zone]: !!e.target.checked,
-                  }))
+                  setTimeZones((prev) =>
+                    prev.map((prevZone) => ({
+                      ...prevZone,
+                      selected:
+                        prevZone.label === zone.label
+                          ? e.target.checked
+                          : prevZone.selected,
+                    }))
+                  )
                 }
               />
-              <label htmlFor={`selectors_${zone}_control`} className="text-sm">
-                {zone}
+              <label
+                htmlFor={`selectors_${zone.label}_control`}
+                className="text-sm"
+              >
+                {zone.label}
               </label>
             </div>
           );
         })}
       </div>
-      <div className="grid grid-cols-8 relative" key={now.toString()}>
-        {timeZones.map((zone) => (
-          <div
-            className={`
+      <div
+        className={`grid relative border rounded-lg`}
+        key={now.toString()}
+        style={{
+          gridTemplateColumns: `repeat(${
+            selectedTimeZones.length || 1
+          }, minmax(0, 140px))`,
+        }}
+      >
+        <div
+          className={`
+              grid
+              grid-cols-subgrid
+              col-span-${selectedTimeZones.length}
+              ${rowHeightClass}
+              border-b
+              gap-4
+              justify-center
+              items-center 
               text-gray-400
               text-sm
-              ${rowHeightClass}
-              bg-white
-              rounded-sm
-              cursor-pointer
               font-bold
-              align-bottom
               select-none
-            `}
-            key={zone.label}
-            onClick={() => toggleZone(zone)}
-          >
-            {zone.label}
-          </div>
-        ))}
+              
+              `}
+        >
+          {selectedTimeZones.map((zone) => (
+            <div
+              className={`
+              ${rowHeightClass}
+              cursor-pointer
+              p-3
+              `}
+              key={zone.label}
+              onClick={() => toggleZone(zone)}
+            >
+              {zone.label}
+            </div>
+          ))}
+        </div>
         {Array.from({ length: 24 }, (_, index) => index).map((index) => (
           <div
             className={`
               grid
               grid-cols-subgrid
-              col-span-8
+              col-span-${selectedTimeZones.length}
               ${rowHeightClass}
               border-b
               cursor-pointer
@@ -238,7 +267,7 @@ function App() {
             key={`row-${index}`}
             onClick={() => toggleRow(index)}
           >
-            {timeZones.map((zone) => {
+            {selectedTimeZones.map((zone) => {
               const time = new Date();
               time.setHours(index, 0, 0, 0);
               // console.log(time);
@@ -253,11 +282,6 @@ function App() {
                   p-1
                   rounded-sm
                   ${zone.label === DEFAULT_ZONE ? "font-bold" : ""}
-                  ${
-                    !selectedZones[zone.label]
-                      ? "text-transparent"
-                      : "text-gray-400"
-                  }
                 `}
                   key={`${zone.label}_${tzDate.toString()}`}
                 >
@@ -287,8 +311,7 @@ function App() {
             pl-1
             text-xs
             text-red-600
-            whitespace-nowrap
-            
+            whitespace-nowrap            
             `}
           >
             {format(now, "hh:mm aa")}
