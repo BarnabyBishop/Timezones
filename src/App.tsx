@@ -153,23 +153,31 @@ function App() {
 
   return (
     <div className="grid justify-center">
-      <div className="fixed left-1 top-14 z-10">
-        <div key={`selectors_all`} className="flex gap-1 cursor-pointer">
-          <input
-            id={`selectors_all_control`}
-            name={`selectors_all_control`}
-            type="checkbox"
-            checked={timeZones.find(({ selected }) => !selected) ? false : true}
-            onChange={(e) =>
-              setTimeZones((prev) =>
-                prev.map((zone) => ({
-                  ...zone,
-                  selected: e.target.checked,
-                }))
-              )
-            }
-          />
-          <label htmlFor={`selectors_all_control`} className="text-sm">
+      <div className="fixed left-0 top-14 z-10 flex flex-col gap-1">
+        <div
+          key={`selectors_all`}
+          className="border-t border-b border-r rounded-r-lg"
+        >
+          <label
+            htmlFor={`selectors_all_control`}
+            className="flex gap-1 text-sm p-2 w-full cursor-pointer rounded-r-lg hover:bg-slate-50"
+          >
+            <input
+              id={`selectors_all_control`}
+              name={`selectors_all_control`}
+              type="checkbox"
+              checked={
+                timeZones.find(({ selected }) => !selected) ? false : true
+              }
+              onChange={(e) =>
+                setTimeZones((prev) =>
+                  prev.map((zone) => ({
+                    ...zone,
+                    selected: e.target.checked,
+                  }))
+                )
+              }
+            />
             All
           </label>
         </div>
@@ -177,29 +185,29 @@ function App() {
           return (
             <div
               key={`selectors_${zone.label}`}
-              className="flex gap-1 cursor-pointer"
+              className="border-t border-b border-r rounded-r-lg"
             >
-              <input
-                id={`selectors_${zone.label}_control`}
-                name={`selectors_${zone.label}_control`}
-                type="checkbox"
-                checked={zone.selected}
-                onChange={(e) =>
-                  setTimeZones((prev) =>
-                    prev.map((prevZone) => ({
-                      ...prevZone,
-                      selected:
-                        prevZone.label === zone.label
-                          ? e.target.checked
-                          : prevZone.selected,
-                    }))
-                  )
-                }
-              />
               <label
                 htmlFor={`selectors_${zone.label}_control`}
-                className="text-sm"
+                className="flex gap-1 text-sm p-2 w-full cursor-pointer rounded-r-lg hover:bg-slate-50"
               >
+                <input
+                  id={`selectors_${zone.label}_control`}
+                  name={`selectors_${zone.label}_control`}
+                  type="checkbox"
+                  checked={zone.selected}
+                  onChange={(e) =>
+                    setTimeZones((prev) =>
+                      prev.map((prevZone) => ({
+                        ...prevZone,
+                        selected:
+                          prevZone.label === zone.label
+                            ? e.target.checked
+                            : prevZone.selected,
+                      }))
+                    )
+                  }
+                />
                 {zone.label}
               </label>
             </div>
