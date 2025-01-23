@@ -10,8 +10,12 @@ type TimeZone = {
   abbreviation: string;
   hasDST: boolean;
 };
-
-const DEFAULT_ZONE = "Sydney";
+/** TODO
+ * - Set favourites (ELMO, AW etc)
+ * - Hover current time bar
+ * - Click row to copy Slack ready time (10:30am WA / 12:00pm NSW (AEST) / 4:30pm NZ)
+ */
+const DEFAULT_ZONE = "Seoul";
 
 const DEFAULT_TIMEZONES = [
   {
