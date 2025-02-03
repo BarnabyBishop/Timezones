@@ -59,7 +59,7 @@ const DEFAULT_TIMEZONES = [
     selected: true,
   },
   {
-    label: "Brisbane",
+    label: "QLD",
     timezone: "Australia/Brisbane",
     gmtOffset: 10,
     abbreviation: "AEST",
@@ -67,7 +67,7 @@ const DEFAULT_TIMEZONES = [
     selected: true,
   },
   {
-    label: "Sydney",
+    label: "NSW",
     timezone: "Australia/Sydney",
     gmtOffset: 11,
     abbreviation: "AEDT",
@@ -135,6 +135,18 @@ function App() {
   };
 
   const toggleRow = (index: number) => {
+    navigator.clipboard.writeText(
+      selectedTimeZones
+        .map((zone) => {
+          const time = new Date();
+          time.setHours(index, 0, 0, 0);
+
+          const tzDate = new TZDate(time, zone.timezone);
+          addHours(tzDate, index).toString();
+          return `${format(tzDate, "hh:mmaa")} ${zone.label}`;
+        })
+        .join(" / ")
+    );
     if (selectedRows.includes(index)) {
       setSelectedRows((prev) => prev.filter((row) => row !== index));
     } else {
@@ -282,19 +294,17 @@ function App() {
             {selectedTimeZones.map((zone) => {
               const time = new Date();
               time.setHours(index, 0, 0, 0);
-              // console.log(time);
 
               const tzDate = new TZDate(time, zone.timezone);
               addHours(tzDate, index).toString();
-              // const time = `${index > 12 ? index - 12 : index}:00 ${index >= 12 ? "PM" : "AM"}`
               return (
                 <div
                   className={`
-                  text-sm
-                  p-1
-                  rounded-sm
-                  ${zone.label === DEFAULT_ZONE ? "font-bold" : ""}
-                `}
+                    text-sm
+                    p-1
+                    rounded-sm
+                    ${zone.label === DEFAULT_ZONE ? "font-bold" : ""}
+                    `}
                   key={`${zone.label}_${tzDate.toString()}`}
                 >
                   {format(tzDate, "hh:mm aa")}
